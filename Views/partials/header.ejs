@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Lost & Found helps people reconnect with their belongings.">
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/css/style.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+    <header class="site-header">
+      <div class="container header-content">
+        <a class="brand" href="/" aria-label="Lost and Found home">
+          <span class="brand-mark" aria-hidden="true">LF</span>
+          <span>Lost <span>&amp;</span> Found</span>
+        </a>
+        <nav class="site-nav" aria-label="Main navigation">
+          <a href="/contact" <%= currentPage === 'contact' ? 'aria-current="page"' : '' %>>Contact</a>
+        </nav>
+      </div>
+    </header>
