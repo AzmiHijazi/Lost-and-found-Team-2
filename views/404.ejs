@@ -1,21 +1,17 @@
 <%- include('partials/header', { title, currentPage: '' }) %>
 
-<main id="main-content" class="not-found-page">
-  <section class="container not-found" aria-labelledby="not-found-heading">
-    <div class="not-found__art" aria-hidden="true">
-      <span class="not-found__ring not-found__ring--one"></span>
-      <span class="not-found__ring not-found__ring--two"></span>
-      <span class="not-found__code">404</span>
-      <span class="not-found__spark not-found__spark--one">✦</span>
-      <span class="not-found__spark not-found__spark--two">✦</span>
-    </div>
-    <div class="not-found__content">
-      <p class="eyebrow">Page not found</p>
-      <h1 id="not-found-heading">This item isn’t in our catalog.</h1>
-      <p>It may have been moved, renamed, or never existed. Let’s get you back to a place that can help.</p>
-      <div class="not-found__actions">
-        <a class="button button--primary" href="/contact">Go to contact page <span aria-hidden="true">→</span></a>
-        <a class="button button--secondary" href="/">Start over</a>
+<main id="main-content">
+  <section class="container py-5 text-center" aria-labelledby="not-found-heading">
+    <div class="row justify-content-center">
+      <div class="col-lg-7">
+        <p class="display-1 fw-bold text-brand mb-0" aria-hidden="true">404</p>
+        <p class="text-uppercase small fw-semibold text-secondary mb-2">Page not found</p>
+        <h1 id="not-found-heading" class="fw-bold mb-3">This item isn&rsquo;t in our catalog.</h1>
+        <p class="lead text-secondary">It may have been moved, renamed, or never existed. Let&rsquo;s get you back to a place that can help.</p>
+        <div class="d-flex flex-column flex-sm-row justify-content-center gap-2 mt-4">
+          <a class="btn btn-primary" href="/contact">Go to contact page <span aria-hidden="true">&rarr;</span></a>
+          <a class="btn btn-outline-primary" href="/">Start over</a>
+        </div>
       </div>
     </div>
   </section>

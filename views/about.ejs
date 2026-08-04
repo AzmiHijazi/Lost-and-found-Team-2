@@ -1,0 +1,75 @@
+<%- include('partials/header', { title, currentPage: 'about' }) %>
+
+<main id="main-content">
+  <section class="bg-white border-bottom py-5">
+    <div class="container text-center">
+      <p class="text-uppercase small fw-semibold text-brand mb-2">About us</p>
+      <h1 class="fw-bold mb-3">About Lost &amp; Found</h1>
+      <p class="lead text-secondary mb-0 mx-auto" style="max-width: 42rem;">A simple place for our campus to report lost items and return found ones to their owners.</p>
+    </div>
+  </section>
+
+  <section class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <h2 class="h4 fw-bold">What our website does</h2>
+        <p class="text-secondary">
+          Every week students lose bags, keys, phones and wallets around campus. Someone
+          usually finds them, but there is no easy way for the two people to reach each
+          other. Notes on notice boards get missed and messages get lost in group chats.
+        </p>
+        <p class="text-secondary">
+          Lost &amp; Found puts everything in one place. If you lost something, you can
+          report it. If you found something, you can post it so the owner can recognise it.
+          Anyone can browse the list of reported items and open an item to see the full
+          details and how to get in touch.
+        </p>
+
+        <h2 class="h4 fw-bold mt-5">How it works</h2>
+        <div class="row g-3 mt-1">
+          <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-body">
+                <span class="fs-4 text-accent" aria-hidden="true">&#10022;</span>
+                <h3 class="h6 fw-semibold mt-2 mb-1">Report an item</h3>
+                <p class="mb-0 text-secondary small">Tell us what you lost or found, where, and when.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-body">
+                <span class="fs-4 text-accent" aria-hidden="true">&#9906;</span>
+                <h3 class="h6 fw-semibold mt-2 mb-1">Browse the list</h3>
+                <p class="mb-0 text-secondary small">See every reported item and check if yours is there.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-body">
+                <span class="fs-4 text-accent" aria-hidden="true">&#8599;</span>
+                <h3 class="h6 fw-semibold mt-2 mb-1">Get it back</h3>
+                <p class="mb-0 text-secondary small">Open the item page and contact the person who has it.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h2 class="h4 fw-bold mt-5">Who uses it</h2>
+        <p class="text-secondary mb-0">
+          Visitors can browse items without signing in. Registered users can report their
+          own items and manage them, and an administrator looks after all the records to
+          keep the list accurate and up to date.
+        </p>
+
+        <div class="d-flex flex-column flex-sm-row gap-2 mt-4">
+          <a class="btn btn-primary" href="/items">Browse items <span aria-hidden="true">&rarr;</span></a>
+          <a class="btn btn-outline-primary" href="/contact">Contact us</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<%- include('partials/footer', { year }) %>

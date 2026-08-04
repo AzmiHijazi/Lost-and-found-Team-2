@@ -1,3 +1,4 @@
+<% const active = typeof currentPage === 'string' ? currentPage : ''; %>
 <!doctype html>
 <html lang="en">
   <head>
@@ -5,18 +6,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Lost & Found helps people reconnect with their belongings.">
     <title><%= title %></title>
-    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+      /* Project palette layered on top of Bootstrap (replaces the old public/css/style.css). */
+      :root {
+        --bs-body-bg: #f5f8fc;
+        --bs-body-color: #152338;
+        --bs-border-color: #dce4ef;
+        --bs-link-color: #1d5fd0;
+        --bs-link-hover-color: #16489f;
+      }
+      .btn-primary {
+        --bs-btn-bg: #1d5fd0;        --bs-btn-border-color: #1d5fd0;
+        --bs-btn-hover-bg: #16489f;  --bs-btn-hover-border-color: #16489f;
+        --bs-btn-active-bg: #16489f; --bs-btn-active-border-color: #16489f;
+      }
+      .btn-outline-primary {
+        --bs-btn-color: #1d5fd0;      --bs-btn-border-color: #1d5fd0;
+        --bs-btn-hover-bg: #1d5fd0;   --bs-btn-hover-border-color: #1d5fd0;
+        --bs-btn-active-bg: #16489f;  --bs-btn-active-border-color: #16489f;
+      }
+      .text-brand { color: #1d5fd0 !important; }
+      .text-accent { color: #f4a24d !important; }
+      .brand-mark {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 2rem; height: 2rem; border-radius: .6rem;
+        background: #1d5fd0; color: #fff; font-weight: 700; font-size: .8rem;
+      }
+      .form-control:focus, .form-select:focus {
+        border-color: #1d5fd0;
+        box-shadow: 0 0 0 .25rem rgba(29, 95, 208, .15);
+      }
+    </style>
   </head>
   <body>
-    <a class="skip-link" href="#main-content">Skip to main content</a>
-    <header class="site-header">
-      <div class="container header-content">
-        <a class="brand" href="/" aria-label="Lost and Found home">
-          <span class="brand-mark" aria-hidden="true">LF</span>
-          <span>Lost <span>&amp;</span> Found</span>
-        </a>
-        <nav class="site-nav" aria-label="Main navigation">
-          <a href="/contact" <%= currentPage === 'contact' ? 'aria-current="page"' : '' %>>Contact</a>
-        </nav>
-      </div>
-    </header>
+    <a class="visually-hidden-focusable btn btn-dark position-absolute top-0 start-0 m-2" href="#main-content">Skip to main content</a>
+    <%- include('nav', { currentPage: active }) %>
