@@ -1,0 +1,99 @@
+<%- include('partials/header', { title, currentPage: 'contact' }) %>
+
+<main id="main-content">
+  <section class="contact-hero">
+    <div class="container contact-hero__content">
+      <p class="eyebrow">We're here to help</p>
+      <h1>Let’s find a way forward.</h1>
+      <p class="hero-copy">Have a question about a lost item, a found item, or your account? Send us a message and our support team will help point you in the right direction.</p>
+    </div>
+  </section>
+
+  <section class="contact-section" aria-labelledby="contact-form-heading">
+    <div class="container contact-layout">
+      <aside class="contact-details" aria-labelledby="contact-details-heading">
+        <p class="eyebrow">Get in touch</p>
+        <h2 id="contact-details-heading">A little help goes a long way.</h2>
+        <p>Use the form to send your question. Please include any useful item details, such as its category, color, and where it was last seen.</p>
+
+        <div class="detail-list">
+          <div class="detail-card">
+            <span class="detail-icon" aria-hidden="true">✦</span>
+            <div>
+              <h3>Helpful details</h3>
+              <p>Item description, location, and date make it easier for us to assist.</p>
+            </div>
+          </div>
+          <div class="detail-card">
+            <span class="detail-icon" aria-hidden="true">↗</span>
+            <div>
+              <h3>Quick response</h3>
+              <p>We aim to reply to support requests within one business day.</p>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <div class="form-card">
+        <div class="form-card__heading">
+          <p class="eyebrow">Contact form</p>
+          <h2 id="contact-form-heading">How can we help?</h2>
+          <p>Fields marked with <span aria-hidden="true">*</span> are required.</p>
+        </div>
+
+        <% if (sent) { %>
+          <div class="form-notice form-notice--success" role="status">
+            <strong>Thanks for reaching out.</strong>
+            <span>Your message has been submitted successfully.</span>
+          </div>
+        <% } %>
+
+        <% if (Object.keys(errors).length > 0) { %>
+          <div class="form-notice form-notice--error" role="alert">
+            <strong>Please review the highlighted fields.</strong>
+            <span>We need a few more details before your message can be submitted.</span>
+          </div>
+        <% } %>
+
+        <form action="/contact" method="post" novalidate>
+          <div class="form-grid">
+            <div class="field">
+              <label for="name">Your name <span aria-hidden="true">*</span></label>
+              <input id="name" name="name" type="text" autocomplete="name" maxlength="80" value="<%= form.name %>" <%= errors.name ? 'aria-describedby="name-error"' : '' %> aria-invalid="<%= errors.name ? 'true' : 'false' %>" required>
+              <% if (errors.name) { %><p class="field-error" id="name-error"><%= errors.name %></p><% } %>
+            </div>
+
+            <div class="field">
+              <label for="email">Email address <span aria-hidden="true">*</span></label>
+              <input id="email" name="email" type="email" autocomplete="email" maxlength="120" value="<%= form.email %>" <%= errors.email ? 'aria-describedby="email-error"' : '' %> aria-invalid="<%= errors.email ? 'true' : 'false' %>" required>
+              <% if (errors.email) { %><p class="field-error" id="email-error"><%= errors.email %></p><% } %>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="subject">What do you need help with? <span aria-hidden="true">*</span></label>
+            <select id="subject" name="subject" <%= errors.subject ? 'aria-describedby="subject-error"' : '' %> aria-invalid="<%= errors.subject ? 'true' : 'false' %>" required>
+              <option value="" <%= !form.subject ? 'selected' : '' %> disabled>Select a topic</option>
+              <option value="Lost item" <%= form.subject === 'Lost item' ? 'selected' : '' %>>I lost an item</option>
+              <option value="Found item" <%= form.subject === 'Found item' ? 'selected' : '' %>>I found an item</option>
+              <option value="Account support" <%= form.subject === 'Account support' ? 'selected' : '' %>>Account support</option>
+              <option value="Other" <%= form.subject === 'Other' ? 'selected' : '' %>>Something else</option>
+            </select>
+            <% if (errors.subject) { %><p class="field-error" id="subject-error"><%= errors.subject %></p><% } %>
+          </div>
+
+          <div class="field">
+            <label for="message">Your message <span aria-hidden="true">*</span></label>
+            <textarea id="message" name="message" rows="6" maxlength="1500" aria-describedby="<%= errors.message ? 'message-help message-error' : 'message-help' %>" aria-invalid="<%= errors.message ? 'true' : 'false' %>" required><%= form.message %></textarea>
+            <p class="field-help" id="message-help">Please do not include passwords or other sensitive information.</p>
+            <% if (errors.message) { %><p class="field-error" id="message-error"><%= errors.message %></p><% } %>
+          </div>
+
+          <button class="button button--primary" type="submit">Send message <span aria-hidden="true">→</span></button>
+        </form>
+      </div>
+    </div>
+  </section>
+</main>
+
+<%- include('partials/footer', { year }) %>
