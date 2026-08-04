@@ -1,99 +1,127 @@
-<%- include('partials/header', { title, currentPage: 'contact' }) %>
+<%- include('partials/header', {
+    title: title,
+    currentPage: currentPage
+}) %>
 
-<main id="main-content">
-  <section class="contact-hero">
-    <div class="container contact-hero__content">
-      <p class="eyebrow">We're here to help</p>
-      <h1>Let’s find a way forward.</h1>
-      <p class="hero-copy">Have a question about a lost item, a found item, or your account? Send us a message and our support team will help point you in the right direction.</p>
-    </div>
-  </section>
+<main class="container py-5">
 
-  <section class="contact-section" aria-labelledby="contact-form-heading">
-    <div class="container contact-layout">
-      <aside class="contact-details" aria-labelledby="contact-details-heading">
-        <p class="eyebrow">Get in touch</p>
-        <h2 id="contact-details-heading">A little help goes a long way.</h2>
-        <p>Use the form to send your question. Please include any useful item details, such as its category, color, and where it was last seen.</p>
+    <div class="card contact-card p-4">
 
-        <div class="detail-list">
-          <div class="detail-card">
-            <span class="detail-icon" aria-hidden="true">✦</span>
-            <div>
-              <h3>Helpful details</h3>
-              <p>Item description, location, and date make it easier for us to assist.</p>
-            </div>
-          </div>
-          <div class="detail-card">
-            <span class="detail-icon" aria-hidden="true">↗</span>
-            <div>
-              <h3>Quick response</h3>
-              <p>We aim to reply to support requests within one business day.</p>
-            </div>
-          </div>
-        </div>
-      </aside>
+        <h1 class="text-center mb-4">
+            Contact Us
+        </h1>
 
-      <div class="form-card">
-        <div class="form-card__heading">
-          <p class="eyebrow">Contact form</p>
-          <h2 id="contact-form-heading">How can we help?</h2>
-          <p>Fields marked with <span aria-hidden="true">*</span> are required.</p>
-        </div>
+        <p class="text-center text-secondary">
+            Send us a message if you need help
+            with a lost or found item.
+        </p>
 
-        <% if (sent) { %>
-          <div class="form-notice form-notice--success" role="status">
-            <strong>Thanks for reaching out.</strong>
-            <span>Your message has been submitted successfully.</span>
-          </div>
-        <% } %>
+        <form action="/contact" method="post">
 
-        <% if (Object.keys(errors).length > 0) { %>
-          <div class="form-notice form-notice--error" role="alert">
-            <strong>Please review the highlighted fields.</strong>
-            <span>We need a few more details before your message can be submitted.</span>
-          </div>
-        <% } %>
+            <div class="mb-3">
 
-        <form action="/contact" method="post" novalidate>
-          <div class="form-grid">
-            <div class="field">
-              <label for="name">Your name <span aria-hidden="true">*</span></label>
-              <input id="name" name="name" type="text" autocomplete="name" maxlength="80" value="<%= form.name %>" <%= errors.name ? 'aria-describedby="name-error"' : '' %> aria-invalid="<%= errors.name ? 'true' : 'false' %>" required>
-              <% if (errors.name) { %><p class="field-error" id="name-error"><%= errors.name %></p><% } %>
+                <label for="name"
+                       class="form-label">
+
+                    Name
+
+                </label>
+
+                <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    class="form-control"
+                    placeholder="Enter your name"
+                    required>
+
             </div>
 
-            <div class="field">
-              <label for="email">Email address <span aria-hidden="true">*</span></label>
-              <input id="email" name="email" type="email" autocomplete="email" maxlength="120" value="<%= form.email %>" <%= errors.email ? 'aria-describedby="email-error"' : '' %> aria-invalid="<%= errors.email ? 'true' : 'false' %>" required>
-              <% if (errors.email) { %><p class="field-error" id="email-error"><%= errors.email %></p><% } %>
+            <div class="mb-3">
+
+                <label for="email"
+                       class="form-label">
+
+                    Email
+
+                </label>
+
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    class="form-control"
+                    placeholder="Enter your email"
+                    required>
+
             </div>
-          </div>
 
-          <div class="field">
-            <label for="subject">What do you need help with? <span aria-hidden="true">*</span></label>
-            <select id="subject" name="subject" <%= errors.subject ? 'aria-describedby="subject-error"' : '' %> aria-invalid="<%= errors.subject ? 'true' : 'false' %>" required>
-              <option value="" <%= !form.subject ? 'selected' : '' %> disabled>Select a topic</option>
-              <option value="Lost item" <%= form.subject === 'Lost item' ? 'selected' : '' %>>I lost an item</option>
-              <option value="Found item" <%= form.subject === 'Found item' ? 'selected' : '' %>>I found an item</option>
-              <option value="Account support" <%= form.subject === 'Account support' ? 'selected' : '' %>>Account support</option>
-              <option value="Other" <%= form.subject === 'Other' ? 'selected' : '' %>>Something else</option>
-            </select>
-            <% if (errors.subject) { %><p class="field-error" id="subject-error"><%= errors.subject %></p><% } %>
-          </div>
+            <div class="mb-3">
 
-          <div class="field">
-            <label for="message">Your message <span aria-hidden="true">*</span></label>
-            <textarea id="message" name="message" rows="6" maxlength="1500" aria-describedby="<%= errors.message ? 'message-help message-error' : 'message-help' %>" aria-invalid="<%= errors.message ? 'true' : 'false' %>" required><%= form.message %></textarea>
-            <p class="field-help" id="message-help">Please do not include passwords or other sensitive information.</p>
-            <% if (errors.message) { %><p class="field-error" id="message-error"><%= errors.message %></p><% } %>
-          </div>
+                <label for="subject"
+                       class="form-label">
 
-          <button class="button button--primary" type="submit">Send message <span aria-hidden="true">→</span></button>
+                    Subject
+
+                </label>
+
+                <select
+                    id="subject"
+                    name="subject"
+                    class="form-select"
+                    required>
+
+                    <option value="">
+                        Select a subject
+                    </option>
+
+                    <option value="Lost Item">
+                        Lost Item
+                    </option>
+
+                    <option value="Found Item">
+                        Found Item
+                    </option>
+
+                    <option value="Other">
+                        Other
+                    </option>
+
+                </select>
+
+            </div>
+
+            <div class="mb-3">
+
+                <label for="message"
+                       class="form-label">
+
+                    Message
+
+                </label>
+
+                <textarea
+                    id="message"
+                    name="message"
+                    class="form-control"
+                    rows="5"
+                    placeholder="Write your message"
+                    required></textarea>
+
+            </div>
+
+            <button
+                type="submit"
+                class="btn btn-primary">
+
+                Send Message
+
+            </button>
+
         </form>
-      </div>
+
     </div>
-  </section>
+
 </main>
 
-<%- include('partials/footer', { year }) %>
+<%- include('partials/footer') %>

@@ -1,24 +1,33 @@
-<%- include('partials/header', { title, currentPage: '' }) %>
+<%- include('partials/header', {
+    title: title,
+    currentPage: currentPage
+}) %>
 
-<main id="main-content" class="not-found-page">
-  <section class="container not-found" aria-labelledby="not-found-heading">
-    <div class="not-found__art" aria-hidden="true">
-      <span class="not-found__ring not-found__ring--one"></span>
-      <span class="not-found__ring not-found__ring--two"></span>
-      <span class="not-found__code">404</span>
-      <span class="not-found__spark not-found__spark--one">✦</span>
-      <span class="not-found__spark not-found__spark--two">✦</span>
+<main class="error-page">
+
+    <div class="container text-center">
+
+        <div class="error-number">
+            404
+        </div>
+
+        <h1>
+            Page Not Found
+        </h1>
+
+        <p class="text-secondary">
+            Sorry, the page you requested does not exist.
+        </p>
+
+        <a href="/"
+           class="btn btn-primary">
+
+            Back to Home
+
+        </a>
+
     </div>
-    <div class="not-found__content">
-      <p class="eyebrow">Page not found</p>
-      <h1 id="not-found-heading">This item isn’t in our catalog.</h1>
-      <p>It may have been moved, renamed, or never existed. Let’s get you back to a place that can help.</p>
-      <div class="not-found__actions">
-        <a class="button button--primary" href="/contact">Go to contact page <span aria-hidden="true">→</span></a>
-        <a class="button button--secondary" href="/">Start over</a>
-      </div>
-    </div>
-  </section>
+
 </main>
 
-<%- include('partials/footer', { year }) %>
+<%- include('partials/footer') %>
