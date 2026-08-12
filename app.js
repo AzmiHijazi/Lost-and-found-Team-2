@@ -1,39 +1,49 @@
 const express = require('express');
 const path = require('path');
+const bodyParser = require('body-parser');
+const session = require('express-session');
+require('dotenv').config();
 
 const app = express();
 
+// EJS setup
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
+// Read form data
+app.use(bodyParser.urlencoded({ extended: false }));
 
+// Public folder
 app.use(express.static(path.join(__dirname, 'public')));
 
-// partials/footer.ejs prints `year` on every page that includes it,
-// so set it once here instead of passing it from every route.
+// Session setup
+app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false
+}));
+
+// Footer year
 app.locals.year = new Date().getFullYear();
 
+// Routes
 const indexRoutes = require('./routes/index');
 const itemRoutes = require('./routes/items');
+const authRoutes = require('./routes/auth');
 
 app.use('/', indexRoutes);
 app.use('/items', itemRoutes);
+app.use('/', authRoutes);
 
-// 404 catch-all - must stay after every router.
-// app.use, not app.get('*'): on Express 5 a bare '*' throws at startup.
+// 404 page
 app.use((req, res) => {
-
     res.status(404).render('404', {
         title: 'Page Not Found',
         currentPage: ''
     });
-
 });
 
+// Start server
 app.listen(8080, () => {
-
     console.log('Server is running on port 8080');
-
 });
