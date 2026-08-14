@@ -1,39 +1,60 @@
-// Lost & Found — application entry point.
-// App setup: Azmi. Router mounting + 404 catch-all: Omar.
 const express = require('express');
 const path = require('path');
+const bodyParser = require('body-parser');
+const session = require('express-session');
+require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-// View engine — absolute path so the app runs from any working directory,
-// and lowercase 'views' so it also works on a case-sensitive (Linux) machine.
+// EJS setup
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Middleware
-app.use(express.urlencoded({ extended: true })); // form posts -> req.body
-app.use(express.json()); // JSON bodies -> req.body
+// Read form data
+app.use(bodyParser.urlencoded({ extended: false }));
+
+// Public folder
 app.use(express.static(path.join(__dirname, 'public')));
 
-// partials/footer.ejs reads `year` on every page, so set it once here instead
-// of passing it from every single route.
+// Session setup
+app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false
+}));
+
+// Footer year
 app.locals.year = new Date().getFullYear();
 
-// Routers (owner: Omar)
-const indexRouter = require('./routes/index');
-const itemsRouter = require('./routes/items');
-app.use('/', indexRouter);
-app.use('/items', itemsRouter);
+// Make the logged-in user available to every view (owner: Omar).
+// res.locals is merged into every res.render, so no route has to pass it.
+app.use((req, res, next) => {
+    res.locals.user = req.session.user || null;
+    next();
+});
 
-// 404 catch-all — must stay after every router.
-// app.use, not app.get('*'): on Express 5 a bare '*' throws at startup.
+// Routes
+const indexRoutes = require('./routes/index');
+const itemRoutes = require('./routes/items');
+const authRoutes = require('./routes/auth');
+const submissionRoutes = require('./routes/submissions');
+const dashboardRoutes = require('./routes/dashboard');
+
+app.use('/', indexRoutes);
+app.use('/items', itemRoutes);
+app.use('/', authRoutes);
+app.use('/', submissionRoutes);
+app.use('/', dashboardRoutes);
+
+// 404 page
 app.use((req, res) => {
-  res.status(404).render('404', { title: 'Page not found', currentPage: '' });
+    res.status(404).render('404', {
+        title: 'Page Not Found',
+        currentPage: ''
+    });
 });
 
-app.listen(PORT, () => {
-  console.log(`Lost & Found running at http://localhost:${PORT}`);
+// Start server
+app.listen(8080, () => {
+    console.log('Server is running on port 8080');
 });
-
-module.exports = app;
