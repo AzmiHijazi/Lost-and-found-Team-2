@@ -18,7 +18,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Session setup
 app.use(session({
-    secret: process.env.SESSION_SECRET,
+    secret: process.env.SESSION_SECRET || 'dev-secret',
     resave: false,
     saveUninitialized: false
 }));
@@ -38,11 +38,13 @@ const indexRoutes = require('./routes/index');
 const itemRoutes = require('./routes/items');
 const authRoutes = require('./routes/auth');
 const dashboardRoutes = require('./routes/dashboard');
+const searchRoutes = require('./routes/search');
 
 app.use('/', indexRoutes);
 app.use('/items', itemRoutes);
 app.use('/', authRoutes);
 app.use('/', dashboardRoutes);
+app.use('/', searchRoutes);
 
 // 404 page
 app.use((req, res) => {
