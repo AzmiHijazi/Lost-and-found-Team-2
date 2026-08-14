@@ -1,6 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const { body, validationResult } = require('express-validator');
+const { redirectIfLoggedIn } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -9,7 +10,7 @@ const router = express.Router();
 const users = [];
 
 // Register page
-router.get('/register', (req, res) => {
+router.get('/register', redirectIfLoggedIn, (req, res) => {
 
     res.render('register', {
         title: 'Register | Lost & Found',
@@ -132,7 +133,7 @@ router.post(
 
 
 // Login page
-router.get('/login', (req, res) => {
+router.get('/login', redirectIfLoggedIn, (req, res) => {
 
     res.render('login', {
         title: 'Login | Lost & Found',

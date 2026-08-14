@@ -26,14 +26,23 @@ app.use(session({
 // Footer year
 app.locals.year = new Date().getFullYear();
 
+// Make the logged-in user available to every view (owner: Omar).
+// res.locals is merged into every res.render, so no route has to pass it.
+app.use((req, res, next) => {
+    res.locals.user = req.session.user || null;
+    next();
+});
+
 // Routes
 const indexRoutes = require('./routes/index');
 const itemRoutes = require('./routes/items');
 const authRoutes = require('./routes/auth');
+const dashboardRoutes = require('./routes/dashboard');
 
 app.use('/', indexRoutes);
 app.use('/items', itemRoutes);
 app.use('/', authRoutes);
+app.use('/', dashboardRoutes);
 
 // 404 page
 app.use((req, res) => {
