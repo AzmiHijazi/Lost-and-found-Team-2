@@ -1,0 +1,124 @@
+<%- include('partials/header', {
+    title: title,
+    currentPage: currentPage
+}) %>
+
+<main id="main-content" class="flex-grow-1">
+
+    <div class="container py-5">
+
+        <div class="row justify-content-center">
+
+            <div class="col-md-8 col-lg-5">
+
+                <div class="card shadow-sm">
+
+                    <div class="card-body p-4">
+
+                        <h1 class="h3 text-center mb-3">
+                            Login
+                        </h1>
+
+                        <p class="text-secondary text-center mb-4">
+                            Login to your Lost &amp; Found account.
+                        </p>
+
+
+                        <% if (errors.general) { %>
+
+                            <div
+                                class="alert alert-danger"
+                                role="alert"
+                            >
+                                <%= errors.general.msg %>
+                            </div>
+
+                        <% } %>
+
+
+                        <form action="/login" method="POST" novalidate>
+
+                            <!-- Email -->
+                            <div class="mb-3">
+
+                                <label for="email" class="form-label">
+                                    Email
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="email"
+                                    name="email"
+                                    value="<%= old.email %>"
+                                    class="form-control <%= errors.email ? 'is-invalid' : '' %>"
+                                >
+
+                                <% if (errors.email) { %>
+
+                                    <div class="invalid-feedback">
+                                        <%= errors.email.msg %>
+                                    </div>
+
+                                <% } %>
+
+                            </div>
+
+
+                            <!-- Password -->
+                            <div class="mb-4">
+
+                                <label for="password" class="form-label">
+                                    Password
+                                </label>
+
+                                <input
+                                    type="password"
+                                    id="password"
+                                    name="password"
+                                    class="form-control <%= errors.password ? 'is-invalid' : '' %>"
+                                >
+
+                                <% if (errors.password) { %>
+
+                                    <div class="invalid-feedback">
+                                        <%= errors.password.msg %>
+                                    </div>
+
+                                <% } %>
+
+                            </div>
+
+
+                            <button
+                                type="submit"
+                                class="btn btn-primary w-100"
+                            >
+                                Login
+                            </button>
+
+                        </form>
+
+
+                        <p class="text-center mt-4 mb-0">
+
+                            Don't have an account?
+
+                            <a href="/register">
+                                Register
+                            </a>
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</main>
+
+<%- include('partials/footer') %>
