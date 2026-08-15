@@ -1,3 +1,4 @@
+const cookieParser = require('cookie-parser');
 const express = require('express');
 const path = require('path');
 const bodyParser = require('body-parser');
@@ -12,6 +13,7 @@ app.set('views', path.join(__dirname, 'views'));
 
 // Read form data
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(cookieParser());
 
 // Public folder
 app.use(express.static(path.join(__dirname, 'public')));
@@ -38,11 +40,13 @@ const indexRoutes = require('./routes/index');
 const itemRoutes = require('./routes/items');
 const authRoutes = require('./routes/auth');
 const dashboardRoutes = require('./routes/dashboard');
+const preferenceRoutes = require('./routes/preferences');
 
 app.use('/', indexRoutes);
 app.use('/items', itemRoutes);
 app.use('/', authRoutes);
 app.use('/', dashboardRoutes);
+app.use('/', preferenceRoutes);
 
 // 404 page
 app.use((req, res) => {
