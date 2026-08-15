@@ -37,11 +37,13 @@ app.use((req, res, next) => {
 const indexRoutes = require('./routes/index');
 const itemRoutes = require('./routes/items');
 const authRoutes = require('./routes/auth');
+const submissionRoutes = require('./routes/submissions');
 const dashboardRoutes = require('./routes/dashboard');
 
 app.use('/', indexRoutes);
 app.use('/items', itemRoutes);
 app.use('/', authRoutes);
+app.use('/', submissionRoutes);
 app.use('/', dashboardRoutes);
 
 // 404 page
