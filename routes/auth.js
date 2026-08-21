@@ -1,265 +1,425 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
-const { body, validationResult } = require('express-validator');
-const { redirectIfLoggedIn } = require('../middleware/auth');
+
+const {
+    body,
+    validationResult
+} = require('express-validator');
+
+const {
+    redirectIfLoggedIn
+} = require('../middleware/auth');
+
+const User = require('../models/User');
 
 const router = express.Router();
 
-// Temporary users array
-// The data will be removed whenever the server restarts.
-const users = [];
 
-// Register page
-router.get('/register', redirectIfLoggedIn, (req, res) => {
+// Display registration page
+router.get(
+    '/register',
+    redirectIfLoggedIn,
+    (req, res) => {
+        res.render(
+            'register',
+            {
+                title:
+                    'Register | Lost & Found',
 
-    res.render('register', {
-        title: 'Register | Lost & Found',
-        currentPage: 'register',
-        errors: {},
-        old: {
-            name: '',
-            email: ''
-        }
-    });
+                currentPage:
+                    'register',
 
-});
+                errors: {},
+
+                old: {
+                    name: '',
+                    email: ''
+                }
+            }
+        );
+    }
+);
 
 
-// Register form
+// Process registration form
 router.post(
     '/register',
+
+    redirectIfLoggedIn,
 
     [
         body('name')
             .trim()
             .notEmpty()
-            .withMessage('Please enter your name.'),
+            .withMessage(
+                'Please enter your name.'
+            ),
 
         body('email')
             .trim()
             .notEmpty()
-            .withMessage('Please enter your email.')
+            .withMessage(
+                'Please enter your email.'
+            )
             .bail()
             .isEmail()
-            .withMessage('Please enter a valid email address.'),
+            .withMessage(
+                'Please enter a valid email address.'
+            ),
 
         body('password')
             .notEmpty()
-            .withMessage('Please enter a password.')
+            .withMessage(
+                'Please enter a password.'
+            )
             .bail()
-            .isLength({ min: 6 })
-            .withMessage('Password must be at least 6 characters.'),
+            .isLength({
+                min: 6
+            })
+            .withMessage(
+                'Password must be at least 6 characters.'
+            ),
 
         body('confirmPassword')
             .notEmpty()
-            .withMessage('Please confirm your password.')
+            .withMessage(
+                'Please confirm your password.'
+            )
             .bail()
-            .custom((value, { req }) => {
+            .custom(
+                (value, { req }) => {
+                    if (
+                        value !==
+                        req.body.password
+                    ) {
+                        throw new Error(
+                            'Passwords do not match.'
+                        );
+                    }
 
-                if (value !== req.body.password) {
-                    throw new Error('Passwords do not match.');
+                    return true;
                 }
-
-                return true;
-            })
+            )
     ],
 
-    async (req, res) => {
+    async (req, res, next) => {
+        try {
+            const validationErrors =
+                validationResult(req);
 
-        const validationErrors = validationResult(req);
-        const errors = validationErrors.mapped();
+            const errors =
+                validationErrors.mapped();
 
-        const name = req.body.name.trim();
-        const email = req.body.email.trim().toLowerCase();
-        const password = req.body.password;
+            const old = {
+                name:
+                    req.body.name
+                        .trim(),
 
-        // Check validation errors
-        if (!validationErrors.isEmpty()) {
-
-            return res.status(422).render('register', {
-                title: 'Register | Lost & Found',
-                currentPage: 'register',
-                errors: errors,
-                old: {
-                    name: name,
-                    email: email
-                }
-            });
-
-        }
-
-        // Check if email already exists
-        const existingUser = users.find((user) => {
-            return user.email === email;
-        });
-
-        if (existingUser) {
-
-            errors.email = {
-                msg: 'This email is already registered.'
+                email:
+                    req.body.email
+                        .trim()
+                        .toLowerCase()
             };
 
-            return res.status(422).render('register', {
-                title: 'Register | Lost & Found',
-                currentPage: 'register',
-                errors: errors,
-                old: {
-                    name: name,
-                    email: email
-                }
-            });
+            if (
+                !validationErrors.isEmpty()
+            ) {
+                return res
+                    .status(422)
+                    .render(
+                        'register',
+                        {
+                            title:
+                                'Register | Lost & Found',
 
+                            currentPage:
+                                'register',
+
+                            errors:
+                                errors,
+
+                            old:
+                                old
+                        }
+                    );
+            }
+
+            const existingUser =
+                await User.findOne({
+                    email:
+                        old.email
+                });
+
+            if (existingUser) {
+                errors.email = {
+                    msg:
+                        'This email is already registered.'
+                };
+
+                return res
+                    .status(422)
+                    .render(
+                        'register',
+                        {
+                            title:
+                                'Register | Lost & Found',
+
+                            currentPage:
+                                'register',
+
+                            errors:
+                                errors,
+
+                            old:
+                                old
+                        }
+                    );
+            }
+
+            const hashedPassword =
+                await bcrypt.hash(
+                    req.body.password,
+                    10
+                );
+
+            const newUser =
+                new User({
+                    name:
+                        old.name,
+
+                    email:
+                        old.email,
+
+                    password:
+                        hashedPassword,
+
+                    role:
+                        'user'
+                });
+
+            await newUser.save();
+
+            res.redirect('/login');
+        } catch (error) {
+            next(error);
         }
-
-        // Hash password
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        // Create temporary user
-        const newUser = {
-            id: users.length + 1,
-            name: name,
-            email: email,
-            password: hashedPassword,
-            role: 'user'
-        };
-
-        // Save user in temporary array
-        users.push(newUser);
-
-        // Go to login page
-        res.redirect('/login');
     }
 );
 
 
-// Login page
-router.get('/login', redirectIfLoggedIn, (req, res) => {
+// Display login page
+router.get(
+    '/login',
+    redirectIfLoggedIn,
+    (req, res) => {
+        res.render(
+            'login',
+            {
+                title:
+                    'Login | Lost & Found',
 
-    res.render('login', {
-        title: 'Login | Lost & Found',
-        currentPage: 'login',
-        errors: {},
-        old: {
-            email: ''
-        }
-    });
+                currentPage:
+                    'login',
 
-});
+                errors: {},
+
+                old: {
+                    email: ''
+                }
+            }
+        );
+    }
+);
 
 
-// Login form
+// Process login form
 router.post(
     '/login',
+
+    redirectIfLoggedIn,
 
     [
         body('email')
             .trim()
             .notEmpty()
-            .withMessage('Please enter your email.')
+            .withMessage(
+                'Please enter your email.'
+            )
             .bail()
             .isEmail()
-            .withMessage('Please enter a valid email address.'),
+            .withMessage(
+                'Please enter a valid email address.'
+            ),
 
         body('password')
             .notEmpty()
-            .withMessage('Please enter your password.')
+            .withMessage(
+                'Please enter your password.'
+            )
     ],
 
-    async (req, res) => {
+    async (req, res, next) => {
+        try {
+            const validationErrors =
+                validationResult(req);
 
-        const validationErrors = validationResult(req);
-        const errors = validationErrors.mapped();
+            const errors =
+                validationErrors.mapped();
 
-        const email = req.body.email.trim().toLowerCase();
-        const password = req.body.password;
+            const email =
+                req.body.email
+                    .trim()
+                    .toLowerCase();
 
-        // Check validation errors
-        if (!validationErrors.isEmpty()) {
+            const password =
+                req.body.password;
 
-            return res.status(422).render('login', {
-                title: 'Login | Lost & Found',
-                currentPage: 'login',
-                errors: errors,
-                old: {
-                    email: email
-                }
-            });
+            if (
+                !validationErrors.isEmpty()
+            ) {
+                return res
+                    .status(422)
+                    .render(
+                        'login',
+                        {
+                            title:
+                                'Login | Lost & Found',
 
-        }
+                            currentPage:
+                                'login',
 
-        // Find user
-        const user = users.find((user) => {
-            return user.email === email;
-        });
+                            errors:
+                                errors,
 
-        if (!user) {
+                            old: {
+                                email:
+                                    email
+                            }
+                        }
+                    );
+            }
 
-            errors.general = {
-                msg: 'Incorrect email or password.'
+            const user =
+                await User.findOne({
+                    email:
+                        email
+                });
+
+            if (!user) {
+                errors.general = {
+                    msg:
+                        'Incorrect email or password.'
+                };
+
+                return res
+                    .status(422)
+                    .render(
+                        'login',
+                        {
+                            title:
+                                'Login | Lost & Found',
+
+                            currentPage:
+                                'login',
+
+                            errors:
+                                errors,
+
+                            old: {
+                                email:
+                                    email
+                            }
+                        }
+                    );
+            }
+
+            const passwordMatches =
+                await bcrypt.compare(
+                    password,
+                    user.password
+                );
+
+            if (!passwordMatches) {
+                errors.general = {
+                    msg:
+                        'Incorrect email or password.'
+                };
+
+                return res
+                    .status(422)
+                    .render(
+                        'login',
+                        {
+                            title:
+                                'Login | Lost & Found',
+
+                            currentPage:
+                                'login',
+
+                            errors:
+                                errors,
+
+                            old: {
+                                email:
+                                    email
+                            }
+                        }
+                    );
+            }
+
+            req.session.user = {
+                id:
+                    user._id.toString(),
+
+                name:
+                    user.name,
+
+                email:
+                    user.email,
+
+                role:
+                    user.role
             };
 
-            return res.status(422).render('login', {
-                title: 'Login | Lost & Found',
-                currentPage: 'login',
-                errors: errors,
-                old: {
-                    email: email
+            req.session.save(
+                (error) => {
+                    if (error) {
+                        return next(error);
+                    }
+
+                    res.redirect(
+                        '/dashboard'
+                    );
                 }
-            });
-
+            );
+        } catch (error) {
+            next(error);
         }
-
-        // Compare entered password with hashed password
-        const passwordMatches = await bcrypt.compare(
-            password,
-            user.password
-        );
-
-        if (!passwordMatches) {
-
-            errors.general = {
-                msg: 'Incorrect email or password.'
-            };
-
-            return res.status(422).render('login', {
-                title: 'Login | Lost & Found',
-                currentPage: 'login',
-                errors: errors,
-                old: {
-                    email: email
-                }
-            });
-
-        }
-
-        // Save login information in the session
-        req.session.user = {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            role: user.role
-        };
-
-        res.redirect('/');
     }
 );
 
 
 // Logout
-router.get('/logout', (req, res) => {
+router.get(
+    '/logout',
+    (req, res, next) => {
+        req.session.destroy(
+            (error) => {
+                if (error) {
+                    return next(error);
+                }
 
-    req.session.destroy((error) => {
+                res.clearCookie(
+                    'connect.sid'
+                );
 
-        if (error) {
-            return res.status(500).send('Could not log out.');
-        }
-
-        res.clearCookie('connect.sid');
-
-        res.redirect('/login');
-    });
-
-});
+                res.redirect(
+                    '/login'
+                );
+            }
+        );
+    }
+);
 
 
 module.exports = router;
