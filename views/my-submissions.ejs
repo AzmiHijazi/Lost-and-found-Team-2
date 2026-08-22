@@ -11,6 +11,10 @@
             <a href="/report-item" class="btn btn-primary">Report Item</a>
         </div>
 
+        <% if (message) { %>
+            <div class="alert alert-success"><%= message %></div>
+        <% } %>
+
         <% if (submissions.length === 0) { %>
             <div class="alert alert-info">
                 You have not submitted any items yet.
@@ -18,6 +22,8 @@
         <% } else { %>
             <div class="row g-4">
                 <% submissions.forEach((item) => { %>
+                    <% const categoryName = item.category ? item.category.name : 'Uncategorized'; %>
+                    <% const itemDate = item.date ? new Date(item.date).toLocaleDateString() : ''; %>
                     <div class="col-md-6 col-lg-4">
                         <div class="card h-100 shadow-sm">
                             <div class="card-body">
@@ -27,9 +33,12 @@
 
                                 <h2 class="h5"><%= item.itemName %></h2>
                                 <p class="text-secondary"><%= item.description %></p>
-                                <p class="mb-1"><strong>Category:</strong> <%= item.category %></p>
+                                <p class="mb-1"><strong>Category:</strong> <%= categoryName %></p>
                                 <p class="mb-1"><strong>Location:</strong> <%= item.location %></p>
-                                <p class="mb-0"><strong>Date:</strong> <%= item.date %></p>
+                                <p class="mb-3"><strong>Date:</strong> <%= itemDate %></p>
+                                <a class="btn btn-sm btn-outline-primary" href="/items/<%= item._id %>">View</a>
+                                <a class="btn btn-sm btn-outline-secondary" href="/items/<%= item._id %>/edit">Edit</a>
+                                <a class="btn btn-sm btn-outline-danger" href="/items/<%= item._id %>/delete">Delete</a>
                             </div>
                         </div>
                     </div>

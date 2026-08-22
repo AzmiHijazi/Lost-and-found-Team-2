@@ -1,18 +1,20 @@
 <%- include('partials/header', { title: title, currentPage: currentPage }) %>
 
+<% const dateValue = item.date instanceof Date ? item.date.toISOString().slice(0, 10) : item.date; %>
+
 <main id="main-content" class="flex-grow-1">
     <div class="container py-5">
         <div class="row justify-content-center">
             <div class="col-lg-8">
                 <div class="card shadow-sm">
                     <div class="card-body p-4">
-                        <h1 class="h3 mb-3">Report an Item</h1>
+                        <h1 class="h3 mb-3">Edit Item</h1>
 
                         <p class="text-secondary mb-4">
-                            Enter the information about the lost or found item.
+                            Update the information about the lost or found item.
                         </p>
 
-                        <form action="/report-item" method="POST">
+                        <form action="/items/<%= item._id %>/edit" method="POST">
                             <div class="mb-3">
                                 <label for="itemName" class="form-label">Item Name</label>
 
@@ -20,7 +22,7 @@
                                     type="text"
                                     id="itemName"
                                     name="itemName"
-                                    value="<%= form.itemName %>"
+                                    value="<%= item.itemName %>"
                                     class="form-control <%= errors.itemName ? 'is-invalid' : '' %>"
                                 >
 
@@ -41,7 +43,7 @@
                                 >
                                     <option value="">Choose category</option>
                                     <% categories.forEach((category) => { %>
-                                        <option value="<%= category._id %>" <%= String(form.category) === String(category._id) ? 'selected' : '' %>><%= category.name %></option>
+                                        <option value="<%= category._id %>" <%= String(item.category) === String(category._id) ? 'selected' : '' %>><%= category.name %></option>
                                     <% }); %>
                                 </select>
 
@@ -61,8 +63,8 @@
                                     class="form-select <%= errors.status ? 'is-invalid' : '' %>"
                                 >
                                     <option value="">Choose status</option>
-                                    <option value="Lost" <%= form.status === 'Lost' ? 'selected' : '' %>>Lost</option>
-                                    <option value="Found" <%= form.status === 'Found' ? 'selected' : '' %>>Found</option>
+                                    <option value="Lost" <%= item.status === 'Lost' ? 'selected' : '' %>>Lost</option>
+                                    <option value="Found" <%= item.status === 'Found' ? 'selected' : '' %>>Found</option>
                                 </select>
 
                                 <% if (errors.status) { %>
@@ -79,7 +81,7 @@
                                     type="text"
                                     id="location"
                                     name="location"
-                                    value="<%= form.location %>"
+                                    value="<%= item.location %>"
                                     class="form-control <%= errors.location ? 'is-invalid' : '' %>"
                                 >
 
@@ -97,7 +99,7 @@
                                     type="date"
                                     id="date"
                                     name="date"
-                                    value="<%= form.date %>"
+                                    value="<%= dateValue %>"
                                     class="form-control <%= errors.date ? 'is-invalid' : '' %>"
                                 >
 
@@ -116,7 +118,7 @@
                                     name="description"
                                     rows="4"
                                     class="form-control <%= errors.description ? 'is-invalid' : '' %>"
-                                ><%= form.description %></textarea>
+                                ><%= item.description %></textarea>
 
                                 <% if (errors.description) { %>
                                     <div class="invalid-feedback">
@@ -125,8 +127,8 @@
                                 <% } %>
                             </div>
 
-                            <button type="submit" class="btn btn-primary">Submit Item</button>
-                            <a href="/my-submissions" class="btn btn-outline-secondary">My Submissions</a>
+                            <button type="submit" class="btn btn-primary">Update Item</button>
+                            <a href="/my-submissions" class="btn btn-outline-secondary">Cancel</a>
                         </form>
                     </div>
                 </div>

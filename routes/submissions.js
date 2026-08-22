@@ -1,104 +1,184 @@
 const express = require('express');
 const router = express.Router();
-
-const submissions = require('../data/submissions');
+const Item = require('../models/Item');
+const Category = require('../models/Category');
 const { requireLogin } = require('../middleware/auth');
 
-// Show Report Item page
-router.get('/report-item', requireLogin, (req, res) => {
-    res.render('report-item', {
-        title: 'Report Item | Lost & Found',
-        currentPage: 'report',
-        errors: {},
-        form: {
-            itemName: '',
-            category: '',
-            status: '',
-            location: '',
-            date: '',
-            description: ''
-        }
-    });
-});
-
-// Handle Report Item form
-router.post('/report-item', requireLogin, (req, res) => {
-    const form = {
-        itemName: req.body.itemName.trim(),
-        category: req.body.category.trim(),
-        status: req.body.status.trim(),
-        location: req.body.location.trim(),
-        date: req.body.date.trim(),
-        description: req.body.description.trim()
+function clean(body) {
+    return {
+        itemName: (body.itemName || '').trim(),
+        category: body.category || '',
+        status: body.status || '',
+        location: (body.location || '').trim(),
+        date: body.date || '',
+        description: (body.description || '').trim()
     };
+}
 
+function validate(form) {
     const errors = {};
 
-    // Validation
-    if (form.itemName === '') {
-        errors.itemName = 'Please enter the item name.';
+    for (const field of ['itemName', 'category', 'status', 'location', 'date', 'description']) {
+        if (!form[field]) errors[field] = 'This field is required.';
     }
 
-    if (form.category === '') {
-        errors.category = 'Please choose a category.';
+    if (form.status && !['Lost', 'Found'].includes(form.status)) {
+        errors.status = 'Choose Lost or Found.';
     }
 
-    if (form.status === '') {
-        errors.status = 'Please choose Lost or Found.';
-    }
+    return errors;
+}
 
-    if (form.location === '') {
-        errors.location = 'Please enter the location.';
-    }
+router.get('/report-item', requireLogin, async (req, res, next) => {
+    try {
+        const categories = await Category.find().sort({ name: 1 });
 
-    if (form.date === '') {
-        errors.date = 'Please choose a date.';
-    }
-
-    if (form.description === '') {
-        errors.description = 'Please enter a description.';
-    }
-
-    // If there are errors, show the form again
-    if (Object.keys(errors).length > 0) {
-        return res.status(422).render('report-item', {
+        res.render('report-item', {
             title: 'Report Item | Lost & Found',
             currentPage: 'report',
-            errors: errors,
-            form: form
+            errors: {},
+            form: clean({}),
+            categories
         });
+    } catch (error) {
+        next(error);
     }
-
-    // Create submission
-    const newSubmission = {
-        id: submissions.length + 1,
-        userId: req.session.user.id,
-        itemName: form.itemName,
-        category: form.category,
-        status: form.status,
-        location: form.location,
-        date: form.date,
-        description: form.description
-    };
-
-    // Add submission to temporary array
-    submissions.push(newSubmission);
-
-    // Go to My Submissions
-    res.redirect('/my-submissions');
 });
 
-// Show only submissions created by logged-in user
-router.get('/my-submissions', requireLogin, (req, res) => {
-    const mySubmissions = submissions.filter((submission) => {
-        return submission.userId === req.session.user.id;
-    });
+router.post('/report-item', requireLogin, async (req, res, next) => {
+    try {
+        const form = clean(req.body);
+        const errors = validate(form);
+        const categories = await Category.find().sort({ name: 1 });
 
-    res.render('my-submissions', {
-        title: 'My Submissions | Lost & Found',
-        currentPage: 'submissions',
-        submissions: mySubmissions
-    });
+        if (Object.keys(errors).length) {
+            return res.status(422).render('report-item', {
+                title: 'Report Item | Lost & Found',
+                currentPage: 'report',
+                errors,
+                form,
+                categories
+            });
+        }
+
+        await new Item({ ...form, owner: req.session.user.id }).save();
+        res.redirect('/my-submissions?created=1');
+    } catch (error) {
+        next(error);
+    }
+});
+
+router.get('/my-submissions', requireLogin, async (req, res, next) => {
+    try {
+        const submissions = await Item.find({ owner: req.session.user.id })
+            .populate('category')
+            .sort({ createdAt: -1 });
+
+        res.render('my-submissions', {
+            title: 'My Submissions | Lost & Found',
+            currentPage: 'submissions',
+            submissions,
+            message: req.query.created
+                ? 'Item created successfully.'
+                : req.query.updated
+                    ? 'Item updated successfully.'
+                    : req.query.deleted
+                        ? 'Item deleted successfully.'
+                        : ''
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+router.get('/items/:id/edit', requireLogin, async (req, res, next) => {
+    try {
+        const item = await Item.findOne({ _id: req.params.id, owner: req.session.user.id });
+
+        if (!item) {
+            return res.status(404).render('404', { title: 'Item not found', currentPage: '' });
+        }
+
+        const categories = await Category.find().sort({ name: 1 });
+
+        res.render('edit-item', {
+            title: 'Edit Item | Lost & Found',
+            currentPage: 'submissions',
+            item,
+            categories,
+            errors: {}
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+router.post('/items/:id/edit', requireLogin, async (req, res, next) => {
+    try {
+        const form = clean(req.body);
+        const errors = validate(form);
+        const categories = await Category.find().sort({ name: 1 });
+
+        if (Object.keys(errors).length) {
+            return res.status(422).render('edit-item', {
+                title: 'Edit Item | Lost & Found',
+                currentPage: 'submissions',
+                item: { _id: req.params.id, ...form },
+                categories,
+                errors
+            });
+        }
+
+        const item = await Item.findOneAndUpdate(
+            { _id: req.params.id, owner: req.session.user.id },
+            form,
+            { new: true, runValidators: true }
+        );
+
+        if (!item) {
+            return res.status(404).render('404', { title: 'Item not found', currentPage: '' });
+        }
+
+        res.redirect('/my-submissions?updated=1');
+    } catch (error) {
+        next(error);
+    }
+});
+
+router.get('/items/:id/delete', requireLogin, async (req, res, next) => {
+    try {
+        const item = await Item.findOne({
+            _id: req.params.id,
+            owner: req.session.user.id
+        }).populate('category');
+
+        if (!item) {
+            return res.status(404).render('404', { title: 'Item not found', currentPage: '' });
+        }
+
+        res.render('delete-item', {
+            title: 'Delete Item | Lost & Found',
+            currentPage: 'submissions',
+            item
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+router.post('/items/:id/delete', requireLogin, async (req, res, next) => {
+    try {
+        const item = await Item.findOne({ _id: req.params.id, owner: req.session.user.id });
+
+        if (!item) {
+            return res.status(404).render('404', { title: 'Item not found', currentPage: '' });
+        }
+
+        await Item.findByIdAndDelete(req.params.id);
+        res.redirect('/my-submissions?deleted=1');
+    } catch (error) {
+        next(error);
+    }
 });
 
 module.exports = router;

@@ -5,7 +5,7 @@
     <div class="col-lg-8">
       <div class="card shadow-sm border-0">
         <div class="card-header bg-white d-flex justify-content-between align-items-center">
-          <h1 class="h4 mb-0"><%= item.name %></h1>
+          <h1 class="h4 mb-0"><%= item.itemName %></h1>
           <% if (item.status === 'Lost') { %>
             <span class="badge text-bg-danger">Lost</span>
           <% } else { %>
@@ -13,11 +13,14 @@
           <% } %>
         </div>
         <div class="card-body">
-          <p class="mb-2"><strong>Category:</strong> <%= item.category %></p>
+          <p class="mb-2"><strong>Category:</strong> <%= item.category ? item.category.name : 'Uncategorized' %></p>
           <p class="mb-2"><strong>Location:</strong> <%= item.location %></p>
-          <p class="mb-2"><strong>Date:</strong> <%= item.date %></p>
+          <p class="mb-2"><strong>Date:</strong> <%= item.date ? new Date(item.date).toLocaleDateString() : '' %></p>
           <p class="mb-2"><strong>Description:</strong> <%= item.description %></p>
-          <p class="mb-0"><strong>Contact:</strong> <a href="mailto:<%= item.contactEmail %>"><%= item.contactEmail %></a></p>
+          <% if (item.owner) { %>
+            <p class="mb-2"><strong>Reported by:</strong> <%= item.owner.name %></p>
+            <p class="mb-0"><strong>Contact:</strong> <a href="mailto:<%= item.owner.email %>"><%= item.owner.email %></a></p>
+          <% } %>
         </div>
         <div class="card-footer bg-white">
           <a href="/items" class="btn btn-outline-primary">&larr; Back to Items</a>
