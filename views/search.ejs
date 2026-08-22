@@ -1,0 +1,140 @@
+<%- include('partials/header', {
+    title: title,
+    currentPage: currentPage
+}) %>
+
+<main id="main-content" class="flex-grow-1">
+    <div class="container py-5">
+        <div class="text-center mb-4">
+            <h1 class="h2">
+                Search &amp; Filter Items
+            </h1>
+            <p class="text-secondary">
+                Search for lost and found items.
+            </p>
+        </div>
+
+        <div class="card shadow-sm mb-5">
+            <div class="card-body">
+                <form action="/search" method="GET">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label for="keyword" class="form-label">
+                                Keyword
+                            </label>
+                            <input
+                                type="text"
+                                id="keyword"
+                                name="keyword"
+                                value="<%= filters.keyword %>"
+                                class="form-control"
+                                placeholder="Example: wallet"
+                            >
+                        </div>
+
+                        <div class="col-md-3">
+                            <label for="category" class="form-label">
+                                Category
+                            </label>
+                            <select
+                                id="category"
+                                name="category"
+                                class="form-select"
+                            >
+                                <option value="">All Categories</option>
+                                <option value="Electronics" <%= filters.category === 'Electronics' ? 'selected' : '' %>>
+                                    Electronics
+                                </option>
+                                <option value="Accessories" <%= filters.category === 'Accessories' ? 'selected' : '' %>>
+                                    Accessories
+                                </option>
+                                <option value="Keys" <%= filters.category === 'Keys' ? 'selected' : '' %>>
+                                    Keys
+                                </option>
+                                <option value="Documents" <%= filters.category === 'Documents' ? 'selected' : '' %>>
+                                    Documents
+                                </option>
+                                <option value="Other" <%= filters.category === 'Other' ? 'selected' : '' %>>
+                                    Other
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label for="status" class="form-label">
+                                Status
+                            </label>
+                            <select
+                                id="status"
+                                name="status"
+                                class="form-select"
+                            >
+                                <option value="">All</option>
+                                <option value="Lost" <%= filters.status === 'Lost' ? 'selected' : '' %>>
+                                    Lost
+                                </option>
+                                <option value="Found" <%= filters.status === 'Found' ? 'selected' : '' %>>
+                                    Found
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button
+                                type="submit"
+                                class="btn btn-primary w-100"
+                            >
+                                Search
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <h2 class="h4 mb-3">
+            Search Results
+        </h2>
+
+        <% if (results.length === 0) { %>
+            <div class="alert alert-info">
+                No items matched your search.
+            </div>
+        <% } else { %>
+            <div class="row g-4">
+                <% results.forEach((item) => { %>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-body">
+                                <span class="badge <%= item.status === 'Lost' ? 'text-bg-danger' : 'text-bg-success' %> mb-2">
+                                    <%= item.status %>
+                                </span>
+
+                                <h3 class="h5">
+                                    <%= item.itemName %>
+                                </h3>
+                                <p class="text-secondary">
+                                    <%= item.description %>
+                                </p>
+                                <p class="mb-1">
+                                    <strong>Category:</strong>
+                                    <%= item.category %>
+                                </p>
+                                <p class="mb-1">
+                                    <strong>Location:</strong>
+                                    <%= item.location %>
+                                </p>
+                                <p class="mb-0">
+                                    <strong>Date:</strong>
+                                    <%= item.date %>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+        <% } %>
+    </div>
+</main>
+
+<%- include('partials/footer') %>

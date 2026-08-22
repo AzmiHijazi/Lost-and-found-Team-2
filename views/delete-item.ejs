@@ -1,0 +1,5 @@
+<%- include('partials/header', { title, currentPage }) %>
+<main id="main-content" class="container py-5"><div class="card"><div class="card-body">
+<h1 class="h3">Delete Item</h1><p>Are you sure you want to delete <strong><%= item.itemName %></strong>?</p>
+<form action="/items/<%= item._id %>/delete" method="POST"><button class="btn btn-danger">Yes, delete</button><a class="btn btn-secondary" href="/my-submissions">Cancel</a></form>
+</div></div></main><%- include('partials/footer') %>

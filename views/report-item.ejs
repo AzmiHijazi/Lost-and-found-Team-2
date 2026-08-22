@@ -1,0 +1,138 @@
+<%- include('partials/header', { title: title, currentPage: currentPage }) %>
+
+<main id="main-content" class="flex-grow-1">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card shadow-sm">
+                    <div class="card-body p-4">
+                        <h1 class="h3 mb-3">Report an Item</h1>
+
+                        <p class="text-secondary mb-4">
+                            Enter the information about the lost or found item.
+                        </p>
+
+                        <form action="/report-item" method="POST">
+                            <div class="mb-3">
+                                <label for="itemName" class="form-label">Item Name</label>
+
+                                <input
+                                    type="text"
+                                    id="itemName"
+                                    name="itemName"
+                                    value="<%= form.itemName %>"
+                                    class="form-control <%= errors.itemName ? 'is-invalid' : '' %>"
+                                >
+
+                                <% if (errors.itemName) { %>
+                                    <div class="invalid-feedback">
+                                        <%= errors.itemName %>
+                                    </div>
+                                <% } %>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="category" class="form-label">Category</label>
+
+                                <select
+                                    id="category"
+                                    name="category"
+                                    class="form-select <%= errors.category ? 'is-invalid' : '' %>"
+                                >
+                                    <option value="">Choose category</option>
+                                    <% categories.forEach((category) => { %>
+                                        <option value="<%= category._id %>" <%= String(form.category) === String(category._id) ? 'selected' : '' %>><%= category.name %></option>
+                                    <% }); %>
+                                </select>
+
+                                <% if (errors.category) { %>
+                                    <div class="invalid-feedback">
+                                        <%= errors.category %>
+                                    </div>
+                                <% } %>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="status" class="form-label">Status</label>
+
+                                <select
+                                    id="status"
+                                    name="status"
+                                    class="form-select <%= errors.status ? 'is-invalid' : '' %>"
+                                >
+                                    <option value="">Choose status</option>
+                                    <option value="Lost" <%= form.status === 'Lost' ? 'selected' : '' %>>Lost</option>
+                                    <option value="Found" <%= form.status === 'Found' ? 'selected' : '' %>>Found</option>
+                                </select>
+
+                                <% if (errors.status) { %>
+                                    <div class="invalid-feedback">
+                                        <%= errors.status %>
+                                    </div>
+                                <% } %>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="location" class="form-label">Location</label>
+
+                                <input
+                                    type="text"
+                                    id="location"
+                                    name="location"
+                                    value="<%= form.location %>"
+                                    class="form-control <%= errors.location ? 'is-invalid' : '' %>"
+                                >
+
+                                <% if (errors.location) { %>
+                                    <div class="invalid-feedback">
+                                        <%= errors.location %>
+                                    </div>
+                                <% } %>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="date" class="form-label">Date</label>
+
+                                <input
+                                    type="date"
+                                    id="date"
+                                    name="date"
+                                    value="<%= form.date %>"
+                                    class="form-control <%= errors.date ? 'is-invalid' : '' %>"
+                                >
+
+                                <% if (errors.date) { %>
+                                    <div class="invalid-feedback">
+                                        <%= errors.date %>
+                                    </div>
+                                <% } %>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="description" class="form-label">Description</label>
+
+                                <textarea
+                                    id="description"
+                                    name="description"
+                                    rows="4"
+                                    class="form-control <%= errors.description ? 'is-invalid' : '' %>"
+                                ><%= form.description %></textarea>
+
+                                <% if (errors.description) { %>
+                                    <div class="invalid-feedback">
+                                        <%= errors.description %>
+                                    </div>
+                                <% } %>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">Submit Item</button>
+                            <a href="/my-submissions" class="btn btn-outline-secondary">My Submissions</a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<%- include('partials/footer') %>
