@@ -1,48 +1,48 @@
 const express = require('express');
 const router = express.Router();
 
-const submissions = require('../data/submissions');
+const Item = require('../models/Item');
+const Category = require('../models/Category');
 
-router.get('/search', (req, res) => {
-    const keyword = req.query.keyword || '';
-    const category = req.query.category || '';
-    const status = req.query.status || '';
+router.get('/search', async (req, res, next) => {
+    try {
+        const filters = {
+            keyword: (req.query.keyword || '').trim(),
+            category: req.query.category || '',
+            status: req.query.status || ''
+        };
 
-    let results = submissions;
+        const query = {};
 
-    // Search by keyword
-    if (keyword !== '') {
-        results = results.filter((item) => {
-            return item.itemName
-                .toLowerCase()
-                .includes(keyword.toLowerCase());
-        });
-    }
-
-    // Filter by category
-    if (category !== '') {
-        results = results.filter((item) => {
-            return item.category === category;
-        });
-    }
-
-    // Filter by status
-    if (status !== '') {
-        results = results.filter((item) => {
-            return item.status === status;
-        });
-    }
-
-    res.render('search', {
-        title: 'Search Items | Lost & Found',
-        currentPage: 'search',
-        results: results,
-        filters: {
-            keyword: keyword,
-            category: category,
-            status: status
+        if (filters.keyword) {
+            query.itemName = { $regex: filters.keyword, $options: 'i' };
         }
-    });
+
+        if (filters.category) {
+            query.category = filters.category;
+        }
+
+        if (filters.status) {
+            query.status = filters.status;
+        }
+
+        const results = await Item.find(query)
+            .populate('category')
+            .populate('owner', 'name')
+            .sort({ createdAt: -1 });
+
+        const categories = await Category.find().sort({ name: 1 });
+
+        res.render('search', {
+            title: 'Search Items | Lost & Found',
+            currentPage: 'search',
+            results,
+            filters,
+            categories
+        });
+    } catch (error) {
+        next(error);
+    }
 });
 
 module.exports = router;

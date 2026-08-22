@@ -42,21 +42,11 @@
                                 class="form-select"
                             >
                                 <option value="">All Categories</option>
-                                <option value="Electronics" <%= filters.category === 'Electronics' ? 'selected' : '' %>>
-                                    Electronics
-                                </option>
-                                <option value="Accessories" <%= filters.category === 'Accessories' ? 'selected' : '' %>>
-                                    Accessories
-                                </option>
-                                <option value="Keys" <%= filters.category === 'Keys' ? 'selected' : '' %>>
-                                    Keys
-                                </option>
-                                <option value="Documents" <%= filters.category === 'Documents' ? 'selected' : '' %>>
-                                    Documents
-                                </option>
-                                <option value="Other" <%= filters.category === 'Other' ? 'selected' : '' %>>
-                                    Other
-                                </option>
+                                <% categories.forEach((category) => { %>
+                                    <option value="<%= category._id %>" <%= filters.category === String(category._id) ? 'selected' : '' %>>
+                                        <%= category.name %>
+                                    </option>
+                                <% }); %>
                             </select>
                         </div>
 
@@ -118,7 +108,7 @@
                                 </p>
                                 <p class="mb-1">
                                     <strong>Category:</strong>
-                                    <%= item.category %>
+                                    <%= item.category.name %>
                                 </p>
                                 <p class="mb-1">
                                     <strong>Location:</strong>
