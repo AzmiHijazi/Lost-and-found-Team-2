@@ -11,6 +11,7 @@ const {
 } = require('../middleware/auth');
 
 const User = require('../models/User');
+const ActivityLog = require('../models/ActivityLog');
 
 const router = express.Router();
 
@@ -380,6 +381,12 @@ router.post(
                 role:
                     user.role
             };
+
+            // Record the login so the admin panel can show it
+            await ActivityLog.create({
+                user: user._id,
+                action: 'Logged in'
+            });
 
             req.session.save(
                 (error) => {

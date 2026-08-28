@@ -89,6 +89,9 @@ const preferenceRoutes =
 const searchRoutes =
     require('./routes/search');
 
+const adminRoutes =
+    require('./routes/admin');
+
 
 // Mount routes
 app.use('/', indexRoutes);
@@ -98,6 +101,7 @@ app.use('/', submissionRoutes);
 app.use('/', dashboardRoutes);
 app.use('/', preferenceRoutes);
 app.use('/', searchRoutes);
+app.use('/', adminRoutes);
 
 
 // 404 page

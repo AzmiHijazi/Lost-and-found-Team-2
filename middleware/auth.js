@@ -16,4 +16,20 @@ function redirectIfLoggedIn(req, res, next) {
     next();
 }
 
-module.exports = { requireLogin, redirectIfLoggedIn };
+// Blocks a page unless the logged-in user is an admin.
+function requireAdmin(req, res, next) {
+    if (!req.session.user) {
+        return res.redirect('/login');
+    }
+
+    if (req.session.user.role !== 'admin') {
+        return res.status(403).render('404', {
+            title: 'Admins only',
+            currentPage: ''
+        });
+    }
+
+    next();
+}
+
+module.exports = { requireLogin, redirectIfLoggedIn, requireAdmin };

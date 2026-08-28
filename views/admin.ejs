@@ -1,0 +1,75 @@
+<%- include('partials/header', { title, currentPage }) %>
+
+<main id="main-content" class="container py-5">
+
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <h1 class="fw-bold mb-0">Admin Panel</h1>
+    <a href="/admin/report" class="btn btn-primary">View report</a>
+  </div>
+
+  <h2 class="h5 fw-bold mt-4">Users (<%= users.length %>)</h2>
+  <div class="table-responsive">
+    <table class="table table-sm align-middle bg-white">
+      <thead><tr><th>Name</th><th>Email</th><th>Role</th></tr></thead>
+      <tbody>
+        <% for (const u of users) { %>
+          <tr>
+            <td><%= u.name %></td>
+            <td><%= u.email %></td>
+            <td><span class="badge text-bg-<%= u.role === 'admin' ? 'primary' : 'secondary' %>"><%= u.role %></span></td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="h5 fw-bold mt-4">Items (<%= items.length %>)</h2>
+  <div class="table-responsive">
+    <table class="table table-sm align-middle bg-white">
+      <thead><tr><th>Item</th><th>Status</th><th>Category</th><th>Reported by</th></tr></thead>
+      <tbody>
+        <% for (const item of items) { %>
+          <tr>
+            <td><%= item.itemName %></td>
+            <td><span class="badge text-bg-<%= item.status === 'Lost' ? 'danger' : 'success' %>"><%= item.status %></span></td>
+            <td><%= item.category ? item.category.name : 'Uncategorized' %></td>
+            <td><%= item.owner ? item.owner.name : 'Unknown' %></td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="h5 fw-bold mt-4">Contact messages (<%= messages.length %>)</h2>
+  <div class="table-responsive">
+    <table class="table table-sm align-middle bg-white">
+      <thead><tr><th>From</th><th>Email</th><th>Subject</th></tr></thead>
+      <tbody>
+        <% for (const m of messages) { %>
+          <tr>
+            <td><%= m.name %></td>
+            <td><%= m.email %></td>
+            <td><%= m.subject %></td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="h5 fw-bold mt-4">Recent activity</h2>
+  <% if (logs.length === 0) { %>
+    <p class="alert alert-info">No activity recorded yet.</p>
+  <% } else { %>
+    <ul class="list-group">
+      <% for (const log of logs) { %>
+        <li class="list-group-item d-flex justify-content-between">
+          <span><strong><%= log.user ? log.user.name : 'Unknown user' %></strong> &mdash; <%= log.action %></span>
+          <span class="text-secondary small"><%= new Date(log.createdAt).toLocaleString() %></span>
+        </li>
+      <% } %>
+    </ul>
+  <% } %>
+
+</main>
+
+<%- include('partials/footer') %>
