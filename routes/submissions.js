@@ -1,9 +1,12 @@
 const express = require('express');
 const router = express.Router();
+
 const Item = require('../models/Item');
 const Category = require('../models/Category');
+
 const { requireLogin } = require('../middleware/auth');
 
+// Clean the values coming from the form
 function clean(body) {
     return {
         itemName: (body.itemName || '').trim(),
@@ -15,170 +18,369 @@ function clean(body) {
     };
 }
 
+// Validate the Report Item / Edit Item form
 function validate(form) {
     const errors = {};
 
-    for (const field of ['itemName', 'category', 'status', 'location', 'date', 'description']) {
-        if (!form[field]) errors[field] = 'This field is required.';
+    const requiredFields = [
+        'itemName',
+        'category',
+        'status',
+        'location',
+        'date',
+        'description'
+    ];
+
+    for (const field of requiredFields) {
+        if (!form[field]) {
+            errors[field] = 'This field is required.';
+        }
     }
 
-    if (form.status && !['Lost', 'Found'].includes(form.status)) {
+    // Status must only be Lost or Found
+    if (
+        form.status &&
+        !['Lost', 'Found'].includes(form.status)
+    ) {
         errors.status = 'Choose Lost or Found.';
     }
 
     return errors;
 }
+// REPORT ITEM PAGE
+// GET /report-item
+router.get(
+    '/report-item',
+    requireLogin,
+    async (req, res, next) => {
+        try {
+            // Get all categories from MongoDB
+            const categories = await Category.find()
+                .sort({ name: 1 });
 
-router.get('/report-item', requireLogin, async (req, res, next) => {
-    try {
-        const categories = await Category.find().sort({ name: 1 });
-
-        res.render('report-item', {
-            title: 'Report Item | Lost & Found',
-            currentPage: 'report',
-            errors: {},
-            form: clean({}),
-            categories
-        });
-    } catch (error) {
-        next(error);
-    }
-});
-
-router.post('/report-item', requireLogin, async (req, res, next) => {
-    try {
-        const form = clean(req.body);
-        const errors = validate(form);
-        const categories = await Category.find().sort({ name: 1 });
-
-        if (Object.keys(errors).length) {
-            return res.status(422).render('report-item', {
+            res.render('report-item', {
                 title: 'Report Item | Lost & Found',
                 currentPage: 'report',
-                errors,
-                form,
+                errors: {},
+                form: clean({}),
                 categories
             });
+
+        } catch (error) {
+            next(error);
         }
-
-        await new Item({ ...form, owner: req.session.user.id }).save();
-        res.redirect('/my-submissions?created=1');
-    } catch (error) {
-        next(error);
     }
-});
+);
+// CREATE ITEM
+// POST /report-item
+router.post(
+    '/report-item',
+    requireLogin,
+    async (req, res, next) => {
+        try {
+            // Get and clean form data
+            const form = clean(req.body);
 
-router.get('/my-submissions', requireLogin, async (req, res, next) => {
-    try {
-        const submissions = await Item.find({ owner: req.session.user.id })
-            .populate('category')
-            .sort({ createdAt: -1 });
+            // Validate form
+            const errors = validate(form);
 
-        res.render('my-submissions', {
-            title: 'My Submissions | Lost & Found',
-            currentPage: 'submissions',
-            submissions,
-            message: req.query.created
-                ? 'Item created successfully.'
-                : req.query.updated
-                    ? 'Item updated successfully.'
-                    : req.query.deleted
-                        ? 'Item deleted successfully.'
-                        : ''
-        });
-    } catch (error) {
-        next(error);
-    }
-});
+            // Categories are needed again if validation fails
+            const categories = await Category.find()
+                .sort({ name: 1 });
 
-router.get('/items/:id/edit', requireLogin, async (req, res, next) => {
-    try {
-        const item = await Item.findOne({ _id: req.params.id, owner: req.session.user.id });
+            // If there are validation errors,
+            // show the form again with the entered values
+            if (Object.keys(errors).length > 0) {
+                return res.status(422).render(
+                    'report-item',
+                    {
+                        title: 'Report Item | Lost & Found',
+                        currentPage: 'report',
+                        errors,
+                        form,
+                        categories
+                    }
+                );
+            }
 
-        if (!item) {
-            return res.status(404).render('404', { title: 'Item not found', currentPage: '' });
+            // Create the new item in MongoDB
+            const newItem = new Item({
+                ...form,
+
+                // Store the logged-in user as the owner
+                owner: req.session.user.id
+            });
+
+            await newItem.save();
+
+            // Redirect to the user's submissions
+            res.redirect(
+                '/my-submissions?created=1'
+            );
+
+        } catch (error) {
+            next(error);
         }
-
-        const categories = await Category.find().sort({ name: 1 });
-
-        res.render('edit-item', {
-            title: 'Edit Item | Lost & Found',
-            currentPage: 'submissions',
-            item,
-            categories,
-            errors: {}
-        });
-    } catch (error) {
-        next(error);
     }
-});
+);
 
-router.post('/items/:id/edit', requireLogin, async (req, res, next) => {
-    try {
-        const form = clean(req.body);
-        const errors = validate(form);
-        const categories = await Category.find().sort({ name: 1 });
+// MY SUBMISSIONS
+// GET /my-submissions
+router.get(
+    '/my-submissions',
+    requireLogin,
+    async (req, res, next) => {
+        try {
+            // Find only items created by the logged-in user
+            const submissions = await Item.find({
+                owner: req.session.user.id
+            })
+                // Replace category ObjectId with category data
+                .populate('category')
 
-        if (Object.keys(errors).length) {
-            return res.status(422).render('edit-item', {
+                // Newest items appear first
+                .sort({ createdAt: -1 });
+
+            // Success message after create/edit/delete
+            let message = '';
+
+            if (req.query.created) {
+                message = 'Item created successfully.';
+            } else if (req.query.updated) {
+                message = 'Item updated successfully.';
+            } else if (req.query.deleted) {
+                message = 'Item deleted successfully.';
+            }
+
+            res.render('my-submissions', {
+                title: 'My Submissions | Lost & Found',
+                currentPage: 'submissions',
+                submissions,
+                message
+            });
+
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+// EDIT ITEM PAGE
+// GET /items/:id/edit
+router.get(
+    '/items/:id/edit',
+    requireLogin,
+    async (req, res, next) => {
+        try {
+            // Find the item and make sure it belongs
+            // to the logged-in user
+            const item = await Item.findOne({
+                _id: req.params.id,
+                owner: req.session.user.id
+            });
+
+            // Item does not exist or does not belong
+            // to this user
+            if (!item) {
+                return res.status(404).render(
+                    '404',
+                    {
+                        title: 'Item not found',
+                        currentPage: ''
+                    }
+                );
+            }
+
+            // Load categories for the dropdown
+            const categories = await Category.find()
+                .sort({ name: 1 });
+
+            res.render('edit-item', {
                 title: 'Edit Item | Lost & Found',
                 currentPage: 'submissions',
-                item: { _id: req.params.id, ...form },
+                item,
                 categories,
-                errors
+                errors: {}
             });
+
+        } catch (error) {
+            next(error);
         }
-
-        const item = await Item.findOneAndUpdate(
-            { _id: req.params.id, owner: req.session.user.id },
-            form,
-            { new: true, runValidators: true }
-        );
-
-        if (!item) {
-            return res.status(404).render('404', { title: 'Item not found', currentPage: '' });
-        }
-
-        res.redirect('/my-submissions?updated=1');
-    } catch (error) {
-        next(error);
     }
-});
+);
+// UPDATE ITEM
+// POST /items/:id/edit
+router.post(
+    '/items/:id/edit',
+    requireLogin,
+    async (req, res, next) => {
+        try {
+            // Clean the values submitted by the user
+            const form = clean(req.body);
 
-router.get('/items/:id/delete', requireLogin, async (req, res, next) => {
-    try {
-        const item = await Item.findOne({
-            _id: req.params.id,
-            owner: req.session.user.id
-        }).populate('category');
+            // Validate the edited values
+            const errors = validate(form);
 
-        if (!item) {
-            return res.status(404).render('404', { title: 'Item not found', currentPage: '' });
+            // Categories are needed if the form
+            // needs to be displayed again
+            const categories = await Category.find()
+                .sort({ name: 1 });
+
+            // Validation failed
+            if (Object.keys(errors).length > 0) {
+                return res.status(422).render(
+                    'edit-item',
+                    {
+                        title: 'Edit Item | Lost & Found',
+                        currentPage: 'submissions',
+
+                        // Keep the edited values in the form
+                        item: {
+                            _id: req.params.id,
+                            ...form
+                        },
+
+                        categories,
+                        errors
+                    }
+                );
+            }
+
+
+            // First make sure the item exists
+            // AND belongs to the logged-in user
+            const existingItem = await Item.findOne({
+                _id: req.params.id,
+                owner: req.session.user.id
+            });
+
+            // Do not allow another user to edit the item
+            if (!existingItem) {
+                return res.status(404).render(
+                    '404',
+                    {
+                        title: 'Item not found',
+                        currentPage: ''
+                    }
+                );
+            }
+
+            // Update using findByIdAndUpdate()
+            // as required by the Phase 3 rubric
+            const updatedItem =
+                await Item.findByIdAndUpdate(
+                    req.params.id,
+                    form,
+                    {
+                        // Return the updated document
+                        new: true,
+
+                        // Apply Mongoose validation
+                        runValidators: true
+                    }
+                );
+
+
+            // Extra safety check
+            if (!updatedItem) {
+                return res.status(404).render(
+                    '404',
+                    {
+                        title: 'Item not found',
+                        currentPage: ''
+                    }
+                );
+            }
+
+            // Return to My Submissions
+            res.redirect(
+                '/my-submissions?updated=1'
+            );
+
+        } catch (error) {
+            next(error);
         }
-
-        res.render('delete-item', {
-            title: 'Delete Item | Lost & Found',
-            currentPage: 'submissions',
-            item
-        });
-    } catch (error) {
-        next(error);
     }
-});
+);
 
-router.post('/items/:id/delete', requireLogin, async (req, res, next) => {
-    try {
-        const item = await Item.findOne({ _id: req.params.id, owner: req.session.user.id });
+// DELETE CONFIRMATION PAGE
+// GET /items/:id/delete
 
-        if (!item) {
-            return res.status(404).render('404', { title: 'Item not found', currentPage: '' });
+router.get(
+    '/items/:id/delete',
+    requireLogin,
+    async (req, res, next) => {
+        try {
+            // Find the item and check ownership
+            const item = await Item.findOne({
+                _id: req.params.id,
+                owner: req.session.user.id
+            })
+                .populate('category');
+
+            // Item doesn't exist or belongs
+            // to another user
+            if (!item) {
+                return res.status(404).render(
+                    '404',
+                    {
+                        title: 'Item not found',
+                        currentPage: ''
+                    }
+                );
+            }
+
+            // Show confirmation page
+            res.render('delete-item', {
+                title: 'Delete Item | Lost & Found',
+                currentPage: 'submissions',
+                item
+            });
+
+        } catch (error) {
+            next(error);
         }
-
-        await Item.findByIdAndDelete(req.params.id);
-        res.redirect('/my-submissions?deleted=1');
-    } catch (error) {
-        next(error);
     }
-});
+);
+
+// DELETE ITEM
+// POST /items/:id/delete
+router.post(
+    '/items/:id/delete',
+    requireLogin,
+    async (req, res, next) => {
+        try {
+            // Make sure the item belongs
+            // to the logged-in user
+            const item = await Item.findOne({
+                _id: req.params.id,
+                owner: req.session.user.id
+            });
+
+            if (!item) {
+                return res.status(404).render(
+                    '404',
+                    {
+                        title: 'Item not found',
+                        currentPage: ''
+                    }
+                );
+            }
+
+            // Delete the item from MongoDB
+            await Item.findByIdAndDelete(
+                req.params.id
+            );
+
+            // Return to My Submissions
+            res.redirect(
+                '/my-submissions?deleted=1'
+            );
+
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
 
 module.exports = router;
